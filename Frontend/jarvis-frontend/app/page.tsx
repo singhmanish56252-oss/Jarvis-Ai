@@ -258,11 +258,11 @@ export default function JarvisDashboard() {
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/health", { cache: "no-store" });
+        const res = await fetch("/backend-api/health", { cache: "no-store" });
         setIsBackendOnline(res.ok);
       } catch {
         try {
-          const res = await fetch("http://localhost:8000/health", { cache: "no-store" });
+          const res = await fetch("http://127.0.0.1:8000/health", { cache: "no-store" });
           setIsBackendOnline(res.ok);
         } catch {
           setIsBackendOnline(false);
@@ -298,13 +298,13 @@ export default function JarvisDashboard() {
     try {
       let res;
       try {
-        res = await fetch("http://127.0.0.1:8000/execute", {
+        res = await fetch("/backend-api/execute", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ command: commandText }),
         });
       } catch {
-        res = await fetch("http://localhost:8000/execute", {
+        res = await fetch("http://127.0.0.1:8000/execute", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ command: commandText }),
@@ -367,13 +367,13 @@ export default function JarvisDashboard() {
     try {
       let res;
       try {
-        res = await fetch("http://127.0.0.1:8000/generate-image", {
+        res = await fetch("/backend-api/generate-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt: promptToUse, width: 1024, height: 1024 }),
         });
       } catch {
-        res = await fetch("http://localhost:8000/generate-image", {
+        res = await fetch("http://127.0.0.1:8000/generate-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt: promptToUse, width: 1024, height: 1024 }),
