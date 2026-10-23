@@ -1,9 +1,33 @@
 import os
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+def safe_log(msg: str):
+    """Safely log messages even on Windows cp1252 terminals."""
+    try:
+        print(msg)
+    except Exception:
+        try:
+            print(msg.encode("ascii", errors="backslashreplace").decode("ascii"))
+        except Exception:
+            pass
+
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from typing import Optional
 import Chatbot
 import TextTospeech
 import RealtimeSearchEngine
@@ -142,10 +166,12 @@ async def favicon():
 
 class CommandRequest(BaseModel):
     command: str
+    language: Optional[str] = None
 
 class SearchRequest(BaseModel):
     query: str
     max_results: int = 6
+    language: Optional[str] = None
 
 class ImageRequest(BaseModel):
     prompt: str
@@ -155,24 +181,28 @@ class ImageRequest(BaseModel):
 @app.post("/execute")
 async def execute_command(request: CommandRequest):
     command = request.command
-    print(f"[API] Execute Command: {command}")
+    safe_log(f"[API] Execute Command: {command} (Language: {request.language})")
     
     # 1. Use LLM / Chatbot pipeline
-    result = Chatbot.ProcessCommand(command)
+    result = Chatbot.ProcessCommand(command, language=request.language)
     response_text = result.get("response", "")
     speech_text = result.get("speech", response_text)
     image_url = result.get("image_url")
     action = result.get("action")
+    detected_lang = result.get("language", "en")
     
-    # 2. Speak the response (Local TTS, non-blocking background queue)
+    # 2. Speak the response (Local TTS, non-blocking background queue with language-specific voice)
     if speech_text:
-        TextTospeech.Speak(speech_text)
+        TextTospeech.Speak(speech_text, lang=detected_lang)
     
     return {
         "status": "success",
         "response": response_text,
+        "speech": speech_text,
         "image_url": image_url,
-        "action": action
+        "action": action,
+        "url": result.get("url"),
+        "language": detected_lang
     }
 
 @app.post("/search")
@@ -182,7 +212,7 @@ async def search_web(request: SearchRequest):
     Returns a list of results with title, snippet, and URL.
     """
     query = request.query
-    print(f"[API] Web Search: {query}")
+    safe_log(f"[API] Web Search: {query}")
     
     try:
         results = RealtimeSearchEngine.QuickSearch(query, request.max_results)
@@ -202,10 +232,10 @@ async def smart_search(request: SearchRequest):
     grounded in live web results.
     """
     query = request.query
-    print(f"[API] Smart Search: {query}")
+    safe_log(f"[API] Smart Search: {query}")
     
     try:
-        answer = RealtimeSearchEngine.SmartSearch(query, request.max_results)
+        answer = RealtimeSearchEngine.SmartSearch(query, request.max_results, language=request.language)
         return {
             "status": "success",
             "query": query,
@@ -221,7 +251,7 @@ async def generate_image(request: ImageRequest):
     Returns file details and web accessible URL.
     """
     prompt = request.prompt
-    print(f"[API] Image Generation: {prompt}")
+    safe_log(f"[API] Image Generation: {prompt}")
     
     try:
         res = ImageGeneration.GenerateImage(prompt, width=request.width, height=request.height)

@@ -225,30 +225,46 @@ def FormatResultsAsText(results: list[SearchResult]) -> str:
 
 
 # ─── Gemini-Powered Smart Search ────────────────────────────────────────
-def SmartSearch(query: str, max_results: int = 6) -> str:
+def SmartSearch(query: str, max_results: int = 6, language: str = None) -> str:
     """
     Perform a web search and use Gemini to summarize the results
-    into a coherent, informative answer.
-
-    This gives Jarvis the ability to answer questions about current events,
-    latest news, real-time information, etc.
+    into a coherent, informative answer. Supports Hindi, Hinglish, and English.
 
     Args:
         query: The user's search query.
         max_results: Number of web results to use as context.
+        language: "hi" (Hindi), "hinglish", or "en" (English).
 
     Returns:
-        A Gemini-summarized answer grounded in live web results.
+        A Gemini-summarized answer grounded in live web results in the requested language.
     """
 
     # Get raw search results
     results = SearchWeb(query, max_results)
 
     if not results:
+        if language == "hi":
+            return f"मुझे '{query}' के लिए कोई परिणाम नहीं मिले, सर।"
+        elif language == "hinglish":
+            return f"Mujhe '{query}' ke liye koi results nahi mile, sir."
         return f"I couldn't find any results for '{query}'. Please try a different search."
 
     # Format results as context for Gemini
     search_context = FormatResultsAsText(results)
+
+    # Detect language if not provided
+    if not language:
+        if re.search(r'[\u0900-\u097F]', query):
+            language = "hi"
+        else:
+            language = "en"
+
+    if language == "hi":
+        lang_instruction = "- IMPORTANT: Synthesize the answer entirely in fluent Hindi using Devanagari script. Maintain polite and professional tone ('जी सर...')."
+    elif language == "hinglish":
+        lang_instruction = "- IMPORTANT: Synthesize the answer naturally in Hinglish (Hindi written in Roman/English alphabet, e.g. 'Ji sir...')."
+    else:
+        lang_instruction = "- Synthesize the response in clear, professional English."
 
     # Build the summarization prompt
     summarization_prompt = f"""You are JARVIS, an advanced AI assistant. The user asked a question that requires 
@@ -260,6 +276,7 @@ WEB SEARCH RESULTS:
 {search_context}
 
 INSTRUCTIONS:
+{lang_instruction}
 - Synthesize the search results into a clear, accurate, and helpful response.
 - Cite specific sources when making factual claims (e.g., "According to [Source Name]...").
 - If the results contain conflicting information, mention both perspectives.

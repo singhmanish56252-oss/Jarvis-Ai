@@ -141,6 +141,7 @@ export default function JarvisDashboard() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [activeLanguage, setActiveLanguage] = useState<"auto" | "en" | "hi" | "hinglish">("auto");
 
   // 3D Perspective Tilt on mouse move
   const [reactorTilt, setReactorTilt] = useState({ rotateX: 0, rotateY: 0 });
@@ -197,7 +198,8 @@ export default function JarvisDashboard() {
         const recognition = new SpeechRecognition();
         recognition.continuous = false;
         recognition.interimResults = true;
-        recognition.lang = "en-US";
+        // en-IN supports English and Hinglish transcription cleanly; hi-IN supports Devanagari
+        recognition.lang = activeLanguage === "hi" ? "hi-IN" : "en-IN";
 
         recognition.onstart = () => {
           setIsListening(true);
@@ -231,7 +233,7 @@ export default function JarvisDashboard() {
         recognitionRef.current = recognition;
       }
     }
-  }, [transcript]);
+  }, [transcript, activeLanguage]);
 
   const toggleListening = () => {
     soundFx.playClick();
@@ -245,6 +247,9 @@ export default function JarvisDashboard() {
     } else {
       setTranscript("");
       try {
+        if (recognitionRef.current) {
+          recognitionRef.current.lang = activeLanguage === "hi" ? "hi-IN" : "en-IN";
+        }
         recognitionRef.current.start();
       } catch (err) {
         console.error("Could not start recognition:", err);
@@ -296,18 +301,23 @@ export default function JarvisDashboard() {
     setStatus("THINKING");
 
     try {
+      const payload = {
+        command: commandText,
+        language: activeLanguage === "auto" ? null : activeLanguage,
+      };
+
       let res;
       try {
         res = await fetch("/backend-api/execute", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ command: commandText }),
+          body: JSON.stringify(payload),
         });
       } catch {
         res = await fetch("http://127.0.0.1:8000/execute", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ command: commandText }),
+          body: JSON.stringify(payload),
         });
       }
 
@@ -319,6 +329,27 @@ export default function JarvisDashboard() {
       const jarvisText = data.response || "Task completed successfully, sir.";
       const imageUrl = data.image_url || null;
       const action = data.action || null;
+      if (data.action === "switch_language" && data.language) {
+        setActiveLanguage(data.language);
+      }
+
+      // Execute browser navigation commands directly in the browser
+      if (typeof window !== "undefined" && action) {
+        const actLower = action.toLowerCase();
+        if (actLower.includes("refresh")) {
+          setTimeout(() => window.location.reload(), 1200);
+        } else if (actLower.includes("back")) {
+          setTimeout(() => window.history.back(), 800);
+        } else if (actLower.includes("forward")) {
+          setTimeout(() => window.history.forward(), 800);
+        } else if (actLower.includes("scroll_down") || actLower.includes("scroll down")) {
+          window.scrollBy({ top: 600, behavior: "smooth" });
+        } else if (actLower.includes("scroll_up") || actLower.includes("scroll up")) {
+          window.scrollBy({ top: -600, behavior: "smooth" });
+        } else if (actLower.includes("new_tab") || actLower.includes("new tab")) {
+          window.open("https://www.google.com", "_blank");
+        }
+      }
 
       soundFx.playConfirm();
       setIsBackendOnline(true);
@@ -1899,11 +1930,34 @@ export default function JarvisDashboard() {
                     {isListening ? <MicOff className="w-5 h-5 animate-pulse" /> : <Mic className="w-5 h-5" />}
                   </button>
 
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFx.playClick();
+                      const nextMap: Record<string, "auto" | "en" | "hi" | "hinglish"> = {
+                        auto: "hi",
+                        hi: "hinglish",
+                        hinglish: "en",
+                        en: "auto"
+                      };
+                      setActiveLanguage(nextMap[activeLanguage] || "auto");
+                    }}
+                    style={{
+                      borderColor: `${theme.primary}50`,
+                      backgroundColor: `${theme.primary}15`,
+                      color: theme.primary,
+                    }}
+                    className="px-2.5 py-2.5 rounded-xl border text-[11px] font-mono font-bold tracking-wider transition-all hover:scale-105 active:scale-95 whitespace-nowrap shadow-sm"
+                    title="Toggle Language: AUTO (auto-detect) / HI (Hindi) / HINGLISH / EN (English)"
+                  >
+                    🌐 {activeLanguage === "auto" ? "AUTO" : activeLanguage.toUpperCase()}
+                  </button>
+
                   <input
                     type="text"
                     value={inputQuery}
                     onChange={(e) => setInputQuery(e.target.value)}
-                    placeholder="Ask Jarvis anything or type a command (e.g. 'Generate website code', 'Play music')..."
+                    placeholder="Ask Jarvis (English, हिंदी, Hinglish)... e.g. 'आज का मौसम कैसा है', 'YouTube kholo', 'Create image'..."
                     className="flex-1 px-4 py-3 rounded-xl bg-slate-900/90 border border-slate-700/80 focus:border-cyan-400 focus:outline-none text-sm text-white placeholder:text-slate-500"
                   />
 

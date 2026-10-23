@@ -1,6 +1,6 @@
 # 🤖 J.A.R.V.I.S. MARK-VII — Advanced AI Assistant & HUD
 
-[![Live Demo](https://img.shields.io/badge/Demo-Live_Project_Link-cyan?style=for-the-badge&logo=cloudflare)](https://engineer-citations-characterization-hawk.trycloudflare.com)
+[![Live Demo](https://img.shields.io/badge/Demo-Live_Project_Link-cyan?style=for-the-badge&logo=cloudflare)](https://programmer-anaheim-understanding-fruit.trycloudflare.com)
 [![Open in GitHub Codespaces](https://img.shields.io/badge/Codespaces-Run_in_Browser-blue?style=for-the-badge&logo=github)](https://codespaces.new/singhmanish56252-oss/Jarvis-Ai)
 [![Deploy with Vercel](https://img.shields.io/badge/Vercel-Deploy_Live-black?style=for-the-badge&logo=vercel)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsinghmanish56252-oss%2FJarvis-Ai&root-directory=Frontend/jarvis-frontend)
 
@@ -12,7 +12,7 @@ An Iron Man inspired AI Assistant featuring a sci-fi HUD interface, real-time we
 
 | Platform | Purpose | Link |
 | :--- | :--- | :--- |
-| ⚡ **Live Running Web App** | Instant access without installing | [**Launch Live Jarvis HUD**](https://engineer-citations-characterization-hawk.trycloudflare.com) |
+| ⚡ **Live Running Web App** | Instant access without installing | [**Launch Live Jarvis HUD**](https://programmer-anaheim-understanding-fruit.trycloudflare.com) |
 | ☁️ **GitHub Codespaces** | Run in cloud browser with 1-click | [**Open in GitHub Codespaces**](https://codespaces.new/singhmanish56252-oss/Jarvis-Ai) |
 | ▲ **Vercel Cloud Deploy** | Deploy your own copy on Vercel | [**Deploy to Vercel**](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsinghmanish56252-oss%2FJarvis-Ai&root-directory=Frontend/jarvis-frontend) |
 
