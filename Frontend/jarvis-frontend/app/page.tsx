@@ -30,7 +30,9 @@ import {
   Bell,
   CheckCircle2,
   User,
-  ArrowUpRight
+  ArrowUpRight,
+  Video,
+  VideoOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -147,6 +149,76 @@ export default function JarvisDashboard() {
 
   // 3D Perspective Tilt on mouse move
   const [reactorTilt, setReactorTilt] = useState({ rotateX: 0, rotateY: 0 });
+
+  // Built-in Screen Recorder for LinkedIn Demo Video
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordSeconds, setRecordSeconds] = useState(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+  const timerIntervalRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (isRecording) {
+      setRecordSeconds(0);
+      timerIntervalRef.current = setInterval(() => {
+        setRecordSeconds((s) => s + 1);
+      }, 1000);
+    } else {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    }
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    };
+  }, [isRecording]);
+
+  const handleToggleRecording = async () => {
+    soundFx.playClick();
+    if (isRecording) {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.stop();
+      }
+      setIsRecording(false);
+    } else {
+      if (typeof navigator === "undefined" || !navigator.mediaDevices?.getDisplayMedia) {
+        alert("Screen recording is supported on desktop browsers like Chrome, Edge, and Brave.");
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { displaySurface: "browser" },
+          audio: true,
+        });
+        recordedChunksRef.current = [];
+        const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+          ? "video/webm;codecs=vp9"
+          : "video/webm";
+        const recorder = new MediaRecorder(stream, { mimeType });
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) recordedChunksRef.current.push(e.data);
+        };
+        recorder.onstop = () => {
+          const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `jarvis-demo-linkedin-${new Date().toISOString().slice(0, 10)}.webm`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          stream.getTracks().forEach((track) => track.stop());
+        };
+        stream.getVideoTracks()[0].onended = () => {
+          if (recorder.state !== "inactive") recorder.stop();
+          setIsRecording(false);
+        };
+        mediaRecorderRef.current = recorder;
+        recorder.start(1000);
+        setIsRecording(true);
+      } catch (err) {
+        console.error("Screen recording canceled or failed", err);
+      }
+    }
+  };
 
   // Chat conversation history
   const [history, setHistory] = useState<ChatMessage[]>([
@@ -619,8 +691,38 @@ export default function JarvisDashboard() {
           </p>
         </div>
 
-        {/* RIGHT CONTROLS: NOTIFICATIONS, SETTINGS, USER PROFILE */}
+        {/* RIGHT CONTROLS: SCREEN RECORDER, NOTIFICATIONS, SETTINGS, USER PROFILE */}
         <div className="flex items-center gap-2">
+          {/* LinkedIn Demo Video Recorder Button */}
+          <button
+            onClick={handleToggleRecording}
+            style={{
+              borderColor: isRecording ? "#f43f5e" : `${theme.primary}40`,
+              boxShadow: isRecording ? "0 0 20px rgba(244, 63, 94, 0.6)" : undefined,
+            }}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all hover:scale-105 active:scale-95 shadow-lg ${
+              isRecording
+                ? "bg-rose-950/90 text-rose-300 border-rose-500 animate-pulse"
+                : "bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white"
+            }`}
+            title={isRecording ? "Click to Stop & Save Video" : "Record Screen Video for LinkedIn"}
+          >
+            {isRecording ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                <VideoOff className="w-3.5 h-3.5 text-rose-400" />
+                <span className="text-rose-300 font-bold">
+                  {String(Math.floor(recordSeconds / 60)).padStart(2, "0")}:{String(recordSeconds % 60).padStart(2, "0")}
+                </span>
+              </>
+            ) : (
+              <>
+                <Video style={{ color: theme.primary }} className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Record Demo</span>
+              </>
+            )}
+          </button>
+
           {/* Notifications Button */}
           <div className="relative">
             <button
