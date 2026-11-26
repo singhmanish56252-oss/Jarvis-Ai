@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Jarvis AI - Advanced Assistant",
@@ -16,7 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className="antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+        {children}
+      </body>
     </html>
   );
 }

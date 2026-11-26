@@ -33,7 +33,8 @@ import {
   ArrowUpRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import ParticleCanvas from "./ParticleCanvas";
+import dynamic from "next/dynamic";
+const ParticleCanvas = dynamic(() => import("./ParticleCanvas"), { ssr: false });
 import { soundFx } from "./audioFx";
 
 interface ChatMessage {
@@ -43,6 +44,7 @@ interface ChatMessage {
   time: string;
   imageUrl?: string | null;
   action?: string | null;
+  url?: string | null;
 }
 
 type ThemeKey = "cyan" | "gold" | "emerald" | "violet";
@@ -329,25 +331,35 @@ export default function JarvisDashboard() {
       const jarvisText = data.response || "Task completed successfully, sir.";
       const imageUrl = data.image_url || null;
       const action = data.action || null;
+      const targetUrl = data.url || null;
       if (data.action === "switch_language" && data.language) {
         setActiveLanguage(data.language);
       }
 
-      // Execute browser navigation commands directly in the browser
-      if (typeof window !== "undefined" && action) {
-        const actLower = action.toLowerCase();
-        if (actLower.includes("refresh")) {
-          setTimeout(() => window.location.reload(), 1200);
-        } else if (actLower.includes("back")) {
-          setTimeout(() => window.history.back(), 800);
-        } else if (actLower.includes("forward")) {
-          setTimeout(() => window.history.forward(), 800);
-        } else if (actLower.includes("scroll_down") || actLower.includes("scroll down")) {
-          window.scrollBy({ top: 600, behavior: "smooth" });
-        } else if (actLower.includes("scroll_up") || actLower.includes("scroll up")) {
-          window.scrollBy({ top: -600, behavior: "smooth" });
-        } else if (actLower.includes("new_tab") || actLower.includes("new tab")) {
-          window.open("https://www.google.com", "_blank");
+      // Automatically open website / search URL or execute navigation commands
+      if (typeof window !== "undefined") {
+        if (targetUrl) {
+          try {
+            window.open(targetUrl, "_blank");
+          } catch (e) {
+            console.error("Popup blocked:", e);
+          }
+        }
+        if (action) {
+          const actLower = action.toLowerCase();
+          if (actLower.includes("refresh")) {
+            setTimeout(() => window.location.reload(), 1200);
+          } else if (actLower.includes("back")) {
+            setTimeout(() => window.history.back(), 800);
+          } else if (actLower.includes("forward")) {
+            setTimeout(() => window.history.forward(), 800);
+          } else if (actLower.includes("scroll_down") || actLower.includes("scroll down")) {
+            window.scrollBy({ top: 600, behavior: "smooth" });
+          } else if (actLower.includes("scroll_up") || actLower.includes("scroll up")) {
+            window.scrollBy({ top: -600, behavior: "smooth" });
+          } else if (actLower.includes("new_tab") || actLower.includes("new tab")) {
+            window.open("https://www.google.com", "_blank");
+          }
         }
       }
 
@@ -360,6 +372,7 @@ export default function JarvisDashboard() {
         text: jarvisText,
         imageUrl: imageUrl,
         action: action,
+        url: targetUrl,
         time: new Date().toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
@@ -467,7 +480,7 @@ export default function JarvisDashboard() {
   };
 
   return (
-    <main className="relative min-h-screen w-full flex flex-col justify-between p-2 sm:p-3 md:p-4 bg-[#030712] text-slate-100 font-rajdhani overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-200 scanlines">
+    <main className="relative min-h-screen w-full flex flex-col justify-between p-2 sm:p-3 md:p-4 bg-[#030712] text-slate-100 font-rajdhani overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-200 scanlines aurora-bg">
       {/* Dynamic Particle Constellation Background */}
       <ParticleCanvas color={theme.primary} glowColor={theme.glow} />
 
@@ -491,6 +504,14 @@ export default function JarvisDashboard() {
           className="absolute bottom-0 right-0 w-[550px] h-[400px] rounded-full blur-[150px] opacity-20"
         />
 
+        {/* NEW: Extra ambient orb top-right */}
+        <motion.div
+          animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.25, 0.1] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          style={{ background: `radial-gradient(circle, ${theme.accent} 0%, transparent 70%)` }}
+          className="absolute top-0 right-0 w-[400px] h-[350px] rounded-full blur-[130px]"
+        />
+
         {/* Cyber Floor Grid with 3D Perspective */}
         <div className="absolute bottom-0 left-0 right-0 h-[320px] cyber-floor-grid pointer-events-none opacity-45" />
 
@@ -498,6 +519,33 @@ export default function JarvisDashboard() {
         <div
           style={{ background: `linear-gradient(to right, transparent, ${theme.primary}, transparent)` }}
           className="absolute left-0 right-0 h-[2px] opacity-35 animate-laser"
+        />
+
+        {/* NEW: Second scan line (delayed) */}
+        <div
+          style={{
+            background: `linear-gradient(to right, transparent, ${theme.accent}, transparent)`,
+            animationDelay: "3s",
+          }}
+          className="absolute left-0 right-0 h-[1px] opacity-20 animate-laser"
+        />
+
+        {/* NEW: Diagonal neon corner stripes */}
+        <div
+          style={{ borderColor: `${theme.primary}20` }}
+          className="absolute top-0 left-0 w-32 h-32 border-l border-t"
+        />
+        <div
+          style={{ borderColor: `${theme.primary}20` }}
+          className="absolute top-0 right-0 w-32 h-32 border-r border-t"
+        />
+        <div
+          style={{ borderColor: `${theme.primary}15` }}
+          className="absolute bottom-0 left-0 w-32 h-32 border-l border-b"
+        />
+        <div
+          style={{ borderColor: `${theme.primary}15` }}
+          className="absolute bottom-0 right-0 w-32 h-32 border-r border-b"
         />
       </div>
 
@@ -553,13 +601,13 @@ export default function JarvisDashboard() {
 
             {/* Glowing Brand Title */}
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-[0.18em] font-orbitron flex items-center">
-              <span className="text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]">JARVIS</span>
+              <span className="text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)] animate-neon-flicker">JARVIS</span>
               <span
                 style={{
                   color: theme.primary,
                   textShadow: `0 0 20px ${theme.glow}, 0 0 35px ${theme.primary}`,
                 }}
-                className="ml-2"
+                className="ml-2 text-gradient-shine"
               >
                 AI
               </span>
@@ -721,7 +769,7 @@ export default function JarvisDashboard() {
           {/* 1. QUICK STATS PANEL */}
           <div
             style={{ borderColor: `${theme.primary}30` }}
-            className="p-3.5 rounded-2xl cyber-card flex flex-col justify-between shadow-xl transition-all hover:border-cyan-400/50"
+            className="p-3.5 rounded-2xl cyber-card cyber-card-enhanced holo-card flex flex-col justify-between shadow-xl transition-all hover:border-cyan-400/50"
           >
             <div className="flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-2">
@@ -800,7 +848,7 @@ export default function JarvisDashboard() {
           {/* 2. LIVE ACTIVITY PANEL */}
           <div
             style={{ borderColor: `${theme.primary}30` }}
-            className="p-3.5 rounded-2xl cyber-card flex flex-col justify-between shadow-xl transition-all hover:border-cyan-400/50"
+            className="p-3.5 rounded-2xl cyber-card cyber-card-enhanced holo-card flex flex-col justify-between shadow-xl transition-all hover:border-cyan-400/50"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -885,7 +933,7 @@ export default function JarvisDashboard() {
           {/* 3. PERFORMANCE CHART PANEL */}
           <div
             style={{ borderColor: `${theme.primary}30` }}
-            className="p-3.5 rounded-2xl cyber-card flex flex-col justify-between shadow-xl transition-all hover:border-cyan-400/50"
+            className="p-3.5 rounded-2xl cyber-card cyber-card-enhanced holo-card flex flex-col justify-between shadow-xl transition-all hover:border-cyan-400/50"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -1021,21 +1069,31 @@ export default function JarvisDashboard() {
           
           {/* TOP GREETING HEADLINE */}
           <div className="text-center z-10">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-wide font-rajdhani text-white">
+            <motion.h2
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-wide font-rajdhani text-white"
+            >
               Hello, I'm{" "}
               <span
                 style={{
                   color: theme.primary,
                   textShadow: `0 0 20px ${theme.glow}, 0 0 35px ${theme.primary}`,
                 }}
-                className="font-orbitron"
+                className="font-orbitron animate-neon-flicker"
               >
                 Jarvis
               </span>
-            </h2>
-            <p className="text-[11px] sm:text-xs text-slate-400 font-mono tracking-wider mt-0.5">
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.4 }}
+              className="text-[11px] sm:text-xs text-slate-400 font-mono tracking-wider mt-0.5 typewriter-cursor inline-block"
+            >
               Ask me anything, I'm here to help
-            </p>
+            </motion.p>
           </div>
 
           {/* 3D PERSPECTIVE HOLOGRAPHIC AI CORE & PEDESTAL */}
@@ -1361,7 +1419,12 @@ export default function JarvisDashboard() {
           {/* ──────────────────────────────────────────────────────────────────────────
               CENTER BOTTOM ACTION BAR (4 Big Cyber Glass Action Buttons)
           ────────────────────────────────────────────────────────────────────────── */}
-          <div className="w-full max-w-xl flex items-center justify-center gap-2 sm:gap-3 z-20 mt-1">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="w-full max-w-xl flex items-center justify-center gap-2 sm:gap-3 z-20 mt-1"
+          >
             
             {/* Button 1: Chat */}
             <button
@@ -1450,7 +1513,7 @@ export default function JarvisDashboard() {
               </span>
             </button>
 
-          </div>
+          </motion.div>
         </div>
 
         {/* ──────────────────────────────────────────────────────────────────────────
@@ -1461,7 +1524,7 @@ export default function JarvisDashboard() {
           {/* 1. RECENT CONVERSATIONS PANEL */}
           <div
             style={{ borderColor: `${theme.primary}30` }}
-            className="p-3.5 rounded-2xl cyber-card flex flex-col justify-between shadow-xl transition-all hover:border-cyan-400/50"
+            className="p-3.5 rounded-2xl cyber-card cyber-card-enhanced holo-card flex flex-col justify-between shadow-xl transition-all hover:border-cyan-400/50"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -1585,7 +1648,7 @@ export default function JarvisDashboard() {
           {/* 2. POPULAR TOOLS (3x2 Grid) */}
           <div
             style={{ borderColor: `${theme.primary}30` }}
-            className="p-3.5 rounded-2xl cyber-card flex flex-col justify-between shadow-xl transition-all hover:border-cyan-400/50"
+            className="p-3.5 rounded-2xl cyber-card cyber-card-enhanced holo-card flex flex-col justify-between shadow-xl transition-all hover:border-cyan-400/50"
           >
             <div className="flex items-center gap-2 mb-2">
               <Zap style={{ color: theme.primary }} className="w-4 h-4" />
@@ -1671,7 +1734,7 @@ export default function JarvisDashboard() {
           {/* 3. SYSTEM STATUS PANEL */}
           <div
             style={{ borderColor: `${theme.primary}30` }}
-            className="p-3.5 rounded-2xl cyber-card flex flex-col justify-between shadow-xl transition-all hover:border-cyan-400/50"
+            className="p-3.5 rounded-2xl cyber-card cyber-card-enhanced holo-card flex flex-col justify-between shadow-xl transition-all hover:border-cyan-400/50"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -1759,17 +1822,42 @@ export default function JarvisDashboard() {
       ══════════════════════════════════════════════════════════════════════════ */}
       <footer className="relative z-20 w-full max-w-[1720px] mx-auto flex items-center justify-between text-xs font-mono text-slate-500 pt-1.5 px-1 border-t border-slate-800/80">
         <div className="flex items-center gap-2 tracking-[0.25em] text-[9px] sm:text-[10px] md:text-xs uppercase">
-          <span style={{ color: theme.primary }}>SMART</span>
+          <motion.span
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            style={{ color: theme.primary }}
+          >
+            SMART
+          </motion.span>
           <span>•</span>
-          <span style={{ color: theme.accent }}>FAST</span>
+          <motion.span
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.7 }}
+            style={{ color: theme.accent }}
+          >
+            FAST
+          </motion.span>
           <span>•</span>
           <span className="text-slate-300">ALWAYS WITH YOU</span>
+        </div>
+
+        {/* Center: animated status ticker */}
+        <div className="hidden md:flex items-center gap-1.5 text-[9px] font-mono">
+          <motion.div
+            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ backgroundColor: theme.primary }}
+          />
+          <span style={{ color: theme.primary }} className="tracking-widest uppercase">
+            {status === "IDLE" ? "STANDBY" : status === "THINKING" ? "PROCESSING..." : status === "SPEAKING" ? "RESPONDING..." : status === "LISTENING" ? "LISTENING..." : "OFFLINE"}
+          </span>
         </div>
 
         <div className="flex items-center gap-2 text-[9px] sm:text-[10px] md:text-xs">
           <span className="text-slate-400">Jarvis AI</span>
           <span>—</span>
-          <span style={{ color: theme.primary }} className="font-semibold">Beyond Just a Chatbot</span>
+          <span style={{ color: theme.primary }} className="font-semibold neon-underline">Beyond Just a Chatbot</span>
         </div>
       </footer>
 
@@ -1868,6 +1956,24 @@ export default function JarvisDashboard() {
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{msg.text}</p>
+
+                      {/* Clickable Action Link Button */}
+                      {msg.url && (
+                        <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center gap-2">
+                          <a
+                            href={msg.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-950/80 border border-cyan-400/50 text-cyan-300 hover:bg-cyan-900 hover:text-white text-xs font-mono font-bold transition-all shadow-md group/link"
+                          >
+                            <Globe className="w-3.5 h-3.5 text-cyan-400 group-hover/link:animate-spin" />
+                            <span>
+                              Open {msg.action ? msg.action.replace("open_website:", "").replace("search_google:", "Google: ").replace("search_youtube:", "YouTube: ") : "Destination"}
+                            </span>
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
+                      )}
 
                       {/* Visual Artifact Preview if any */}
                       {msg.imageUrl && (

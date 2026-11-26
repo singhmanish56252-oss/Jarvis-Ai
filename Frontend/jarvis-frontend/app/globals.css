@@ -374,3 +374,311 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 210, 255, 0.8);
 }
+
+/* ══════════════════════════════════════════════════════
+   ✨ ENHANCED ANIMATIONS & VISUAL UPGRADE PACK
+══════════════════════════════════════════════════════ */
+
+/* Neon text flicker like a hologram projector */
+@keyframes neonFlicker {
+  0%, 95%, 100% { opacity: 1; text-shadow: 0 0 10px var(--theme-color), 0 0 25px var(--theme-color), 0 0 50px var(--theme-color); }
+  96% { opacity: 0.85; text-shadow: none; }
+  97% { opacity: 1; text-shadow: 0 0 10px var(--theme-color); }
+  98% { opacity: 0.9; text-shadow: none; }
+}
+
+/* Data stream — vertical scrolling bright lines */
+@keyframes dataStream {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* Glitch horizontal shake */
+@keyframes glitchShake {
+  0%, 100% { transform: translateX(0); clip-path: inset(0 0 100% 0); }
+  10% { transform: translateX(-4px); clip-path: inset(10% 0 85% 0); }
+  20% { transform: translateX(4px); clip-path: inset(60% 0 20% 0); }
+  30% { transform: translateX(-2px); clip-path: inset(30% 0 55% 0); }
+  40% { transform: translateX(0); clip-path: inset(0 0 100% 0); }
+}
+
+/* Electric pulse border glow */
+@keyframes electricPulse {
+  0%, 100% { box-shadow: 0 0 5px var(--theme-color), 0 0 15px var(--theme-color), inset 0 0 5px var(--theme-color); }
+  50% { box-shadow: 0 0 20px var(--theme-color), 0 0 50px var(--theme-color), 0 0 80px var(--theme-color), inset 0 0 20px var(--theme-color); }
+}
+
+/* Hologram scanline sweep over cards */
+@keyframes holoSweep {
+  0%   { background-position: 0% -100%; }
+  100% { background-position: 0% 200%; }
+}
+
+/* Rotating hex/diamond shape */
+@keyframes hexSpin {
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* Float up-down gently for cards */
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Typewriter cursor blink */
+@keyframes cursorBlink {
+  0%, 49% { border-right-color: var(--theme-color); }
+  50%, 100% { border-right-color: transparent; }
+}
+
+/* Plasma energy wave */
+@keyframes plasmaWave {
+  0%   { transform: scaleX(1) scaleY(1) rotate(0deg); opacity: 0.6; }
+  33%  { transform: scaleX(1.05) scaleY(0.95) rotate(120deg); opacity: 0.9; }
+  66%  { transform: scaleX(0.95) scaleY(1.05) rotate(240deg); opacity: 0.7; }
+  100% { transform: scaleX(1) scaleY(1) rotate(360deg); opacity: 0.6; }
+}
+
+/* Matrix rain drop */
+@keyframes matrixDrop {
+  0%   { transform: translateY(-20px); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.8; }
+  100% { transform: translateY(100px); opacity: 0; }
+}
+
+/* Border chase — a bright dot running around a border */
+@keyframes borderChase {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 400% 0%; }
+}
+
+/* Warping wormhole effect */
+@keyframes wormhole {
+  0%   { transform: perspective(600px) rotateX(0deg) scale(1); opacity: 0.8; }
+  50%  { transform: perspective(600px) rotateX(10deg) scale(1.05); opacity: 1; }
+  100% { transform: perspective(600px) rotateX(0deg) scale(1); opacity: 0.8; }
+}
+
+/* New animation classes */
+.animate-neon-flicker {
+  animation: neonFlicker 5s ease-in-out infinite;
+}
+
+.animate-electric-pulse {
+  animation: electricPulse 2s ease-in-out infinite;
+}
+
+.animate-card-float {
+  animation: cardFloat 4s ease-in-out infinite;
+}
+
+.animate-hex-spin {
+  animation: hexSpin 8s linear infinite;
+}
+
+.animate-plasma-wave {
+  animation: plasmaWave 6s ease-in-out infinite;
+}
+
+.animate-wormhole {
+  animation: wormhole 4s ease-in-out infinite;
+}
+
+/* Holographic shimmer card — a sweeping light glint */
+.holo-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.holo-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(0, 210, 255, 0.07) 50%,
+    transparent 60%
+  );
+  background-size: 200% 200%;
+  animation: holoSweep 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Chase-border button — bright line tracing the border */
+.chase-border {
+  background: linear-gradient(90deg,
+    transparent, var(--theme-color), transparent
+  ) border-box;
+  background-size: 400% 100%;
+  animation: borderChase 3s linear infinite;
+  border: 1px solid transparent;
+}
+
+/* Glitch clip layer */
+.glitch-layer {
+  animation: glitchShake 8s steps(1) infinite;
+}
+
+/* Plasma orb layer */
+.plasma-orb {
+  animation: plasmaWave 5s ease-in-out infinite;
+  filter: blur(1px);
+}
+
+/* Typewriter text cursor */
+.typewriter-cursor {
+  border-right: 2px solid var(--theme-color);
+  animation: cursorBlink 1s step-end infinite;
+  padding-right: 2px;
+}
+
+/* Data stream lines overlay */
+.data-streams {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.data-stream-line {
+  position: absolute;
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--theme-color), transparent);
+  animation: dataStream linear infinite;
+}
+
+/* Enhanced cyber-card with holo effect */
+.cyber-card-enhanced {
+  background: radial-gradient(130% 130% at 50% 0%, rgba(10, 25, 52, 0.8) 0%, rgba(4, 11, 24, 0.95) 100%);
+  border: 1px solid rgba(0, 210, 255, 0.25);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    inset 0 0 20px rgba(0, 210, 255, 0.05),
+    0 0 0 1px rgba(0, 210, 255, 0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  transition: box-shadow 0.4s ease, border-color 0.4s ease, transform 0.3s ease;
+}
+
+.cyber-card-enhanced:hover {
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.7),
+    inset 0 0 30px rgba(0, 210, 255, 0.1),
+    0 0 25px rgba(0, 210, 255, 0.15),
+    0 0 0 1px rgba(0, 210, 255, 0.2);
+  border-color: rgba(0, 210, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Stat node ring glow on hover */
+.stat-node:hover .stat-ring {
+  box-shadow: 0 0 25px var(--theme-color), 0 0 50px var(--theme-color);
+  border-color: var(--theme-color);
+}
+
+/* HUD corner decorators */
+.hud-corner::before,
+.hud-corner::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--theme-color);
+  border-style: solid;
+  opacity: 0.7;
+}
+
+.hud-corner-tl::before {
+  top: 6px; left: 6px;
+  border-width: 2px 0 0 2px;
+}
+
+.hud-corner-tr::after {
+  top: 6px; right: 6px;
+  border-width: 2px 2px 0 0;
+}
+
+/* Text gradient shine */
+.text-gradient-shine {
+  background: linear-gradient(90deg, var(--theme-color), #ffffff, var(--theme-color));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: borderChase 4s linear infinite;
+}
+
+/* Neon underline */
+.neon-underline {
+  position: relative;
+}
+.neon-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0; right: 0;
+  height: 1px;
+  background: var(--theme-color);
+  box-shadow: 0 0 8px var(--theme-color), 0 0 20px var(--theme-color);
+  animation: electricPulse 2s ease-in-out infinite;
+}
+
+/* Pulsing dot status indicator */
+.status-pulse-dot {
+  position: relative;
+}
+.status-pulse-dot::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--theme-color);
+  animation: ringExpand 2s ease-out infinite;
+}
+
+/* Matrix-style data number ticker */
+@keyframes numberFlip {
+  0%   { transform: translateY(0%); }
+  50%  { transform: translateY(-50%); }
+  100% { transform: translateY(0%); }
+}
+.number-ticker {
+  animation: numberFlip 3s ease-in-out infinite;
+}
+
+/* Background aurora shift */
+@keyframes auroraShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.aurora-bg {
+  background: linear-gradient(
+    -45deg,
+    rgba(0, 210, 255, 0.08),
+    rgba(0, 114, 255, 0.05),
+    rgba(192, 132, 252, 0.05),
+    rgba(0, 242, 254, 0.08)
+  );
+  background-size: 400% 400%;
+  animation: auroraShift 15s ease infinite;
+}
+
+/* Neon button active flash */
+@keyframes neonFlash {
+  0%, 100% { box-shadow: 0 0 5px var(--theme-color); }
+  50% { box-shadow: 0 0 25px var(--theme-color), 0 0 50px var(--theme-color); }
+}
+.neon-btn-active {
+  animation: neonFlash 1.5s ease-in-out infinite;
+}

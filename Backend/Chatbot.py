@@ -52,6 +52,7 @@ Core Language Rules:
 2. When communicating in Hinglish: Respond naturally in Roman Hindi (e.g., 'Ji sir, main bilkul theek hoon. Aap batayein, aaj main aapki kya madad kar sakta hoon?').
 3. When communicating in English: Respond in sophisticated, clear English ('Certainly, sir. Standing by.').
 4. CRITICAL AUTOMATION RULE: All 'ACTION:' prefixes and system commands MUST REMAIN STRICTLY IN ENGLISH, regardless of the conversation language. The conversational text following or preceding it should match the user's language.
+5. If the user asks why tasks are not performing, asks what tasks you can do, or reports an issue (e.g. 'ye koi task kyo nahi kar raha', 'kya kar sakte ho', 'what can you do'): DO NOT reply with movie quotes. Respond politely and clearly, explaining all the tasks you can execute (Open websites like YouTube/Google/Instagram, open PC apps like VS Code/Notepad/Calculator, live web search, AI image generation, browser controls) and invite them to give a command.
 
 Command Mapping:
 - ACTION: Open Website [Website Name or URL]
@@ -374,7 +375,15 @@ def ProcessCommand(user_query: str, language: str = None) -> dict:
                 }
 
         # System automation actions (open website, open app, etc.)
-        Automation.PerformAction(action_command)
+        action_res = Automation.PerformAction(action_command, language=active_lang)
+        
+        # Resolve target URL if applicable
+        target_url = None
+        import automation
+        fast_match = automation.detect_and_execute_intent(action_command, language=active_lang)
+        if fast_match and fast_match.get("url"):
+            target_url = fast_match.get("url")
+
         clean_text = action_parts[0].strip() + " " + (action_parts[1].split(".", 1)[1].strip() if "." in action_parts[1] else "")
         if not clean_text.strip():
             if active_lang == "hi":
@@ -389,6 +398,7 @@ def ProcessCommand(user_query: str, language: str = None) -> dict:
             "speech": clean_text.strip(),
             "image_url": None,
             "action": action_command,
+            "url": target_url,
             "language": active_lang
         }
 
